@@ -1,9 +1,8 @@
 import { Stack } from './stack.js';
 import { convert_fen_to_array, convert_array_to_fen, increase_halfmove_clock, reset_halfmove_clock, increase_fullmove_number } from './fen_conversion.js';
 import { executeMoveOnArray, isValidMove } from './move_logic.js';
-import { sendStockfishApiRequest } from './send_stockfish_api_request.js';
+import { updateEvalBar } from './send_stockfish_api_request.js';
 import { circularLinkedList, Node } from './circular_linked_list.js';
-
 
 let fen = "rnbqkbnp/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let backStack = new Stack();
@@ -12,8 +11,10 @@ let isAnalyzing = false;
 let myCircularLinkedList = new circularLinkedList();
 let myCLLIndex = 0;
 
+
 function drawBoard(fen) {
-    console.log(fen);
+    //console.log(fen);
+    //updateEvalBar(fen);
     let pieceArray = convert_fen_to_array(fen);
     let canvas = document.getElementById("board");
     let canvas_context = canvas.getContext("2d");
@@ -75,34 +76,32 @@ function parseMove(moveFrom, moveTo) {
         return;
     }
     document.getElementById("invalidMoveMessage").style.display = "none";
+
     executeMoveOnArray(fen, pieceArray, colFrom, rowFrom, colTo, rowTo);
     backStack.push(fen);
     fen = convert_array_to_fen(pieceArray, fen);
     drawBoard(fen);
 }
 
-    // sendStockfishApiRequest(fen).then(response => {
-    //     if (response && response.bestMove) {
-    //         console.log("Best move from Stockfish API:", response.bestMove);
-    //     }
-    // });
+
 function undoMove() {
     if (isAnalyzing){
+        updateEvalBar(fen);
         myCLLIndex--;
-        document.getElementById("nextButton").style.display = "inline";
         fen = myCircularLinkedList.getElementAt(myCLLIndex).element;
-        if (myCLLIndex === 0) {
-            document.getElementById("prevButton").style.display = "none";
-        }
+
+        document.getElementById("nextButton").style.display = "inline";
+        if (myCLLIndex === 0) document.getElementById("prevButton").style.display = "none";
         else document.getElementById("prevButton").style.display = "inline";
     }
     else {
+        forwardStack.push(fen);
+        fen = backStack.pop();
+
         document.getElementById("submitButton").style.display = "none";
         document.getElementById("nextButton").style.display = "inline";
-        forwardStack.push(fen);
         if (backStack.size() === 1) document.getElementById("prevButton").style.display = "none";
         else document.getElementById("prevButton").style.display = "inline";
-        fen = backStack.pop();
     }
     
     drawBoard(fen);
@@ -110,53 +109,55 @@ function undoMove() {
 
 function redoMove() {
     if (isAnalyzing){
+        updateEvalBar(fen);
         myCLLIndex++;
-        document.getElementById("prevButton").style.display = "inline";
         fen = myCircularLinkedList.getElementAt(myCLLIndex).element;
+
+        document.getElementById("prevButton").style.display = "inline";
         if (myCLLIndex === myCircularLinkedList.size() - 1) {
             document.getElementById("nextButton").style.display = "none";
         }
         else document.getElementById("nextButton").style.display = "inline";
     }
     else {
-        document.getElementById("prevButton").style.display = "inline";
         backStack.push(fen);
+        fen = forwardStack.pop();
+
+        document.getElementById("prevButton").style.display = "inline";
         if (forwardStack.size() === 1) {
             document.getElementById("nextButton").style.display = "none";
             document.getElementById("submitButton").style.display = "inline";
         }
         else document.getElementById("nextButton").style.display = "inline";
-        fen = forwardStack.pop();
     }
     drawBoard(fen);
 }
 
 function analyzeGame() {
+    updateEvalBar(fen);
     console.log("backstack");
-    backStack.print();
+    while (!backStack.isEmpty()){
+        forwardStack.push(backStack.pop());
+    }
+    forwardStack.print();
     isAnalyzing = true;
     document.getElementById("analyzeButton").style.display = "none";
     document.getElementById("prevButton").style.display = "none";
     document.getElementById("nextButton").style.display = "inline";
-    myCircularLinkedList.insert(fen,0);
-    myCircularLinkedList.insert(fen,0); //mano pavyzdys turi bugu tai tenka taip
-    while (!backStack.isEmpty()){
-        myCircularLinkedList.insert(backStack.pop(),0);
+    while (!forwardStack.isEmpty()){
+        myCircularLinkedList.append(forwardStack.pop());
     }
+    myCircularLinkedList.append(fen);
     console.log("my list" + myCircularLinkedList.toArray());
     fen = myCircularLinkedList.getElementAt(0).element;
     drawBoard(fen);
 }
 
-let list = new circularLinkedList();
-list.insert(1,0);
-list.insert(1,0);
-list.insert(2,0);
-list.insert(3,0);
-console.log(list.toArray());
+
 
 drawBoard(fen);
  
+
 document.getElementById("invalidMoveMessage").style.display = "none";
 document.getElementById("submitButton").addEventListener("click", saveInput);
 document.getElementById("prevButton").addEventListener("click", undoMove);
