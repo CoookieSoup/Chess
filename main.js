@@ -13,8 +13,6 @@ let myCLLIndex = 0;
 
 
 function drawBoard(fen) {
-    //console.log(fen);
-    //updateEvalBar(fen);
     let pieceArray = convert_fen_to_array(fen);
     let canvas = document.getElementById("board");
     let canvas_context = canvas.getContext("2d");
@@ -63,19 +61,19 @@ function saveInput() {
 }
 
 function parseMove(moveFrom, moveTo) {
-    document.getElementById("prevButton").style.display = "inline";
-    
     let pieceArray = convert_fen_to_array(fen);
     let colFrom = moveFrom.charCodeAt(0) - 97;
     let rowFrom = 8 - parseInt(moveFrom.charAt(1));
     let colTo = moveTo.charCodeAt(0) - 97;
     let rowTo = 8 - parseInt(moveTo.charAt(1));
 
+    let isValidMove = true;
     if (!isValidMove(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) {
         document.getElementById("invalidMoveMessage").style.display = "block";
         return;
     }
     document.getElementById("invalidMoveMessage").style.display = "none";
+    document.getElementById("prevButton").style.display = "inline";
 
     executeMoveOnArray(fen, pieceArray, colFrom, rowFrom, colTo, rowTo);
     backStack.push(fen);
@@ -100,7 +98,7 @@ function undoMove() {
 
         document.getElementById("submitButton").style.display = "none";
         document.getElementById("nextButton").style.display = "inline";
-        if (backStack.size() === 1) document.getElementById("prevButton").style.display = "none";
+        if (backStack.size() === 0) document.getElementById("prevButton").style.display = "none";
         else document.getElementById("prevButton").style.display = "inline";
     }
     
@@ -124,7 +122,7 @@ function redoMove() {
         fen = forwardStack.pop();
 
         document.getElementById("prevButton").style.display = "inline";
-        if (forwardStack.size() === 1) {
+        if (forwardStack.size() === 0) {
             document.getElementById("nextButton").style.display = "none";
             document.getElementById("submitButton").style.display = "inline";
         }
