@@ -1,6 +1,6 @@
 import { Stack } from './stack.js';
 import { convert_fen_to_array, convert_array_to_fen, increase_halfmove_clock, reset_halfmove_clock, increase_fullmove_number } from './fen_conversion.js';
-import { executeMoveOnArray, isValidMove } from './move_logic.js';
+import { executeMoveOnArray } from './move_logic.js';
 import { updateEvalBar } from './send_stockfish_api_request.js';
 import { circularLinkedList, Node } from './circular_linked_list.js';
 
@@ -66,16 +66,14 @@ function parseMove(moveFrom, moveTo) {
     let rowFrom = 8 - parseInt(moveFrom.charAt(1));
     let colTo = moveTo.charCodeAt(0) - 97;
     let rowTo = 8 - parseInt(moveTo.charAt(1));
-
-    let isValidMove = true;
-    if (!isValidMove(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) {
+    
+    if (!executeMoveOnArray(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) {
         document.getElementById("invalidMoveMessage").style.display = "block";
         return;
     }
     document.getElementById("invalidMoveMessage").style.display = "none";
     document.getElementById("prevButton").style.display = "inline";
 
-    executeMoveOnArray(fen, pieceArray, colFrom, rowFrom, colTo, rowTo);
     backStack.push(fen);
     fen = convert_array_to_fen(pieceArray, fen);
     drawBoard(fen);
