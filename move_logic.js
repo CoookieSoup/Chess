@@ -14,7 +14,14 @@ export function executeMoveOnArray(fen, pieceArray, colFrom, rowFrom, colTo, row
         case "R":
             if (!rookCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) return false;
             return true;
-        
+        case "b":
+        case "B":
+            if (!bishopCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) return false;
+            return true;
+        case "n":
+        case "N":
+            if (!knightCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) return false;
+            return true;
         default:
             movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
             return true;
@@ -101,10 +108,63 @@ function rookCase (fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
         }
     }
     if (pieceInPath) return false;
-    else {
-        movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
-        return true;
+    movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+    return true;
+}
+function bishopCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
+    if (Math.abs(colFrom - colTo) !== Math.abs(rowFrom - rowTo)) {
+        console.log("triggered bishop error");
+        return false;
     }
+    let pieceInPath = false;
+    if (rowFrom > rowTo) { //up
+        for (let i = 1; i < Math.abs(colFrom - colTo) - 1; i++){
+            if (colFrom > colTo){ //left
+                if (pieceArray[rowFrom - i][colFrom - i] !== ""){
+                    pieceInPath = true;
+                    break;
+                }
+            }
+            else { //right
+                if (pieceArray[rowFrom - i][colFrom + i] !== ""){
+                    pieceInPath = true;
+                    break;
+                }
+            }
+        }
+    }
+    else { //down
+        console.log("down");
+        for (let i = 1; i < Math.abs(colFrom - colTo) - 1; i++){
+            if (colFrom > colTo){ //left
+                if (pieceArray[rowFrom + i][colFrom - i] !== ""){
+                    pieceInPath = true;
+                    break;
+                }
+            }
+            else { //right
+                if (pieceArray[rowFrom + i][colFrom + i] !== ""){
+                    pieceInPath = true;
+                    break;
+                }
+            }
+        }
+    }
+    if (pieceInPath) return false;
+    movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+    return true;
+}
+
+function knightCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
+    if (Math.abs(colFrom - colTo) + Math.abs(rowFrom - rowTo) !== 3) {
+        console.log("triggered knight error");
+        return false;
+    }
+    console.log("knight passed validation");
+    movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+    return true;
+    
+
 }
 
 function movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo){
