@@ -4,7 +4,7 @@ import { executeMoveOnArray } from './move_logic.js';
 import { updateEvalBar } from './send_stockfish_api_request.js';
 import { circularLinkedList, Node } from './circular_linked_list.js';
 
-let fen = "rnbqkbnp/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+let fen = "8/P7/r7/8/8/4Q3/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let backStack = new Stack();
 let forwardStack = new Stack();
 let isAnalyzing = false;
@@ -14,6 +14,7 @@ let myCLLIndex = 0;
 
 function drawBoard(fen) {
     let pieceArray = convert_fen_to_array(fen);
+    console.log(pieceArray);
     let canvas = document.getElementById("board");
     let canvas_context = canvas.getContext("2d");
     let square_Size = 100;
@@ -78,7 +79,6 @@ function parseMove(moveFrom, moveTo) {
     fen = convert_array_to_fen(pieceArray, fen);
     drawBoard(fen);
 }
-
 
 function undoMove() {
     if (isAnalyzing){
@@ -155,6 +155,8 @@ drawBoard(fen);
  
 
 document.getElementById("invalidMoveMessage").style.display = "none";
+document.getElementById("promotionInput").style.display = "none";
+document.getElementById("promotionButton").style.display = "none";
 document.getElementById("submitButton").addEventListener("click", saveInput);
 document.getElementById("prevButton").addEventListener("click", undoMove);
 document.getElementById("nextButton").addEventListener("click", redoMove);

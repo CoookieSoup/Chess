@@ -22,6 +22,14 @@ export function executeMoveOnArray(fen, pieceArray, colFrom, rowFrom, colTo, row
         case "N":
             if (!knightCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) return false;
             return true;
+        case "k":
+        case "K":
+            if (!kingCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) return false;
+            return true;
+        case "q":
+        case "Q":
+            if (!queenCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) return false;
+            return true;
         default:
             movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
             return true;
@@ -43,10 +51,19 @@ function isValid(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
 }
 
 function whitePawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
+    
     let toPiece = pieceArray[rowTo][colTo];
     if (rowTo === rowFrom - 1 ) {
         if ((colTo === colFrom && toPiece === "") || Math.abs(colFrom - colTo) === 1 && toPiece !== ""){
             movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+            if (rowTo === 0) {
+                document.getElementById("promotionInput").style.display = "block";
+                document.getElementById("promotionButton").style.display = "block";
+                document.getElementById("promotionButton").addEventListener("click", function() {
+                    let promotionPiece = promotionInput.value;
+                    promotionCase(fen, pieceArray, colTo, rowTo, promotionPiece)
+                });
+            }
             return true;
         }
     }
@@ -72,11 +89,24 @@ function blackPawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
     return false;
 }
 
+function promotionCase(fen, pieceArray, colTo, rowTo, promotionPiece){
+    let fenParts = fen.split(" ");
+    console.log(promotionPiece);
+    let a = promotionPiece;
+    if (fenParts[1] === "w"){
+        pieceArray[rowTo][colTo] = a;
+    }
+    else pieceArray[rowTo][colTo] = a.toLowerCase();
+    console.log(pieceArray[rowTo][colTo]);
+    
+    document.getElementById("promotionInput").style.display = "none";
+}
+
 function rookCase (fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
     if (colFrom !== colTo && rowFrom !== rowTo) return false;
     let pieceInPath = false;
     if (colFrom !== colTo) {
-        for (let i = 1; i < Math.abs(colFrom - colTo) - 1; i++){
+        for (let i = 1; i < Math.abs(colFrom - colTo); i++){
             if (colFrom > colTo){
                 if (pieceArray[rowFrom][colFrom - i] !== ""){
                     pieceInPath = true;
@@ -92,14 +122,14 @@ function rookCase (fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
         }
     }
     else {
-        for (let i = 1; i < Math.abs(rowFrom - rowTo) - 1; i++){
-            if (colFrom > colTo){
+        for (let i = 1; i < Math.abs(rowFrom - rowTo); i++){
+            if (rowFrom > rowTo){
                 if (pieceArray[rowFrom - i][colFrom] !== ""){
                     pieceInPath = true;
                     break;
                 }
             }
-            if (colFrom < colTo){
+            if (rowFrom < rowTo){
                 if (pieceArray[rowFrom + i][colFrom] !== ""){
                     pieceInPath = true;
                     break;
@@ -118,6 +148,99 @@ function bishopCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
     }
     let pieceInPath = false;
     if (rowFrom > rowTo) { //up
+        for (let i = 1; i < Math.abs(colFrom - colTo) - 1; i++){
+            if (colFrom > colTo){ //left
+                if (pieceArray[rowFrom - i][colFrom - i] !== ""){
+                    pieceInPath = true;
+                    break;
+                }
+            }
+            else { //right
+                if (pieceArray[rowFrom - i][colFrom + i] !== ""){
+                    pieceInPath = true;
+                    break;
+                }
+            }
+        }
+    }
+    else { //down
+        for (let i = 1; i < Math.abs(colFrom - colTo) - 1; i++){
+            if (colFrom > colTo){ //left
+                if (pieceArray[rowFrom + i][colFrom - i] !== ""){
+                    pieceInPath = true;
+                    break;
+                }
+            }
+            else { //right
+                if (pieceArray[rowFrom + i][colFrom + i] !== ""){
+                    pieceInPath = true;
+                    break;
+                }
+            }
+        }
+    }
+    if (pieceInPath) return false;
+    movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+    return true;
+}
+
+function knightCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
+    if (Math.abs(colFrom - colTo) + Math.abs(rowFrom - rowTo) !== 3) {
+        console.log("triggered knight error");
+        return false;
+    }
+    movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+    return true;
+}
+
+function kingCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
+    if (Math.abs(colFrom - colTo) > 1 || Math.abs(rowFrom - rowTo) > 1) {
+        console.log("triggered king error");
+        return false;
+    }
+    movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+    return true;
+}
+
+function queenCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
+    if (colFrom !== colTo && rowFrom !== rowTo && Math.abs(colFrom - colTo) !== Math.abs(rowFrom - rowTo)) {
+        console.log("triggered queen error");
+        return false;
+    }
+    let pieceInPath = false;
+    if (rowFrom == rowTo) {
+        for (let i = 1; i < Math.abs(colFrom - colTo); i++){
+            if (colFrom > colTo){
+                if (pieceArray[rowFrom][colFrom - i] !== ""){
+                    pieceInPath = true;
+                    break;
+                }
+            }
+            if (colFrom < colTo){
+                if (pieceArray[rowFrom][colFrom + i] !== ""){
+                    pieceInPath = true;
+                    break;
+                }
+            }
+        }
+    }
+    else if (colFrom === colTo)  {
+        for (let i = 1; i < Math.abs(rowFrom - rowTo); i++){
+            if (rowFrom > rowTo){
+                if (pieceArray[rowFrom - i][colFrom] !== ""){
+                    pieceInPath = true;
+                    break;
+                }
+            }
+            if (rowFrom < rowTo){
+                if (pieceArray[rowFrom + i][colFrom] !== ""){
+                    pieceInPath = true;
+                    break;
+                }
+            }
+        }
+    }
+    else if (rowFrom > rowTo) { //up
         for (let i = 1; i < Math.abs(colFrom - colTo) - 1; i++){
             if (colFrom > colTo){ //left
                 if (pieceArray[rowFrom - i][colFrom - i] !== ""){
@@ -155,19 +278,8 @@ function bishopCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
     return true;
 }
 
-function knightCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
-    if (Math.abs(colFrom - colTo) + Math.abs(rowFrom - rowTo) !== 3) {
-        console.log("triggered knight error");
-        return false;
-    }
-    console.log("knight passed validation");
-    movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
-    return true;
-    
-
-}
-
 function movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo){
     pieceArray[rowTo][colTo] = pieceArray[rowFrom][colFrom];
     pieceArray[rowFrom][colFrom] = "";
 }
+
