@@ -1,14 +1,22 @@
-export function executeMoveOnArray(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
+export async function executeMoveOnArray(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
     
     if (!isValid(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) {
         return false;
     }
     switch (pieceArray[rowFrom][colFrom]){
         case "P":
-            if (!whitePawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) return false;
+            if (!whiteWillPromote(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) {
+                if (!whitePawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) {
+                    console.log("bad");
+                    return false;
+                }
+            }
+            else {
+                await doPromotion(fen, pieceArray, colFrom, rowFrom, colTo, rowTo);
+            }
             return true;
         case "p":
-            if (!blackPawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) return false;
+            if (!(await blackPawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo))) return false;
             return true;
         case "r":
         case "R":
@@ -50,20 +58,24 @@ function isValid(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
     return true;
 }
 
+function whiteWillPromote(fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
+    let toPiece = pieceArray[rowTo][colTo];
+    if (rowTo === rowFrom - 1 ) {
+        if ((colTo === colFrom && toPiece === "") || Math.abs(colFrom - colTo) === 1 && toPiece !== ""){
+            if (rowTo === 0) {
+                console.log(6);
+                return true;
+            } 
+        }
+    }
+    return false;
+}
+
 function whitePawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
-    
     let toPiece = pieceArray[rowTo][colTo];
     if (rowTo === rowFrom - 1 ) {
         if ((colTo === colFrom && toPiece === "") || Math.abs(colFrom - colTo) === 1 && toPiece !== ""){
             movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
-            if (rowTo === 0) {
-                document.getElementById("promotionInput").style.display = "block";
-                document.getElementById("promotionButton").style.display = "block";
-                document.getElementById("promotionButton").addEventListener("click", function() {
-                    let promotionPiece = promotionInput.value;
-                    promotionCase(fen, pieceArray, colTo, rowTo, promotionPiece)
-                });
-            }
             return true;
         }
     }
@@ -72,6 +84,27 @@ function whitePawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
         return true;
     }
     return false;
+}
+
+function doPromotion(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
+    return new Promise(function(resolve){
+        document.getElementById("promotionInput").style.display = "block";
+        document.getElementById("promotionButton").style.display = "block";
+        document.getElementById("promotionButton").addEventListener('click', handlePromotion);
+        function handlePromotion() {
+            let promotionPiece = document.getElementById("promotionInput").value;
+            movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+            
+            document.getElementById("promotionInput").style.display = "none";
+            document.getElementById("promotionButton").style.display = "none";
+            document.getElementById("promotionButton").removeEventListener('click', handlePromotion);
+
+            if (promotionPiece === "k" || promotionPiece === "K") promotionPiece = "n";
+            if (fen.split(" ")[1] === "w") pieceArray[rowTo][colTo] = promotionPiece.toUpperCase();
+            else pieceArray[rowTo][colTo] = promotionPiece.toLowerCase();
+            resolve(true);
+        }
+    });
 }
 
 function blackPawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
@@ -89,18 +122,18 @@ function blackPawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
     return false;
 }
 
-function promotionCase(fen, pieceArray, colTo, rowTo, promotionPiece){
-    let fenParts = fen.split(" ");
-    console.log(promotionPiece);
-    let a = promotionPiece;
-    if (fenParts[1] === "w"){
-        pieceArray[rowTo][colTo] = a;
-    }
-    else pieceArray[rowTo][colTo] = a.toLowerCase();
-    console.log(pieceArray[rowTo][colTo]);
+// function promotionCase(fen, pieceArray, colTo, rowTo, promotionPiece){
+//     let fenParts = fen.split(" ");
+//     console.log(promotionPiece);
+//     let a = promotionPiece;
+//     if (fenParts[1] === "w"){
+//         pieceArray[rowTo][colTo] = a;
+//     }
+//     else pieceArray[rowTo][colTo] = a.toLowerCase();
+//     console.log(pieceArray[rowTo][colTo]);
     
-    document.getElementById("promotionInput").style.display = "none";
-}
+//     document.getElementById("promotionInput").style.display = "none";
+// }
 
 function rookCase (fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
     if (colFrom !== colTo && rowFrom !== rowTo) return false;

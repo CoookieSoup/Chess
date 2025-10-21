@@ -53,22 +53,15 @@ function drawBoard(fen) {
     }
 }
 
-function saveInput() {
-    let inputValue = document.getElementById("userInput").value;
-    let userText = inputValue;
-    let moveFrom = userText.substring(0, 2);
-    let moveTo = userText.substring(3, 5);
-    parseMove(moveFrom, moveTo);
-}
-
-function parseMove(moveFrom, moveTo) {
+async function parseMove() {
+    let userText = document.getElementById("userInput").value;
     let pieceArray = convert_fen_to_array(fen);
-    let colFrom = moveFrom.charCodeAt(0) - 97;
-    let rowFrom = 8 - parseInt(moveFrom.charAt(1));
-    let colTo = moveTo.charCodeAt(0) - 97;
-    let rowTo = 8 - parseInt(moveTo.charAt(1));
+    let colFrom = userText.substring(0, 2).charCodeAt(0) - 97;
+    let rowFrom = 8 - parseInt(userText.substring(0, 2).charAt(1));
+    let colTo = userText.substring(3, 5).charCodeAt(0) - 97;
+    let rowTo = 8 - parseInt(userText.substring(3, 5).charAt(1));
     
-    if (!executeMoveOnArray(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) {
+    if (!(await executeMoveOnArray(fen, pieceArray, colFrom, rowFrom, colTo, rowTo))) {
         document.getElementById("invalidMoveMessage").style.display = "block";
         return;
     }
@@ -157,7 +150,7 @@ drawBoard(fen);
 document.getElementById("invalidMoveMessage").style.display = "none";
 document.getElementById("promotionInput").style.display = "none";
 document.getElementById("promotionButton").style.display = "none";
-document.getElementById("submitButton").addEventListener("click", saveInput);
+document.getElementById("submitButton").addEventListener("click", parseMove);
 document.getElementById("prevButton").addEventListener("click", undoMove);
 document.getElementById("nextButton").addEventListener("click", redoMove);
 document.getElementById("analyzeButton").addEventListener("click", analyzeGame);
