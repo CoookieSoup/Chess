@@ -4,7 +4,7 @@ import { executeMoveOnArray } from './move_logic.js';
 import { updateEvalBar } from './send_stockfish_api_request.js';
 import { circularLinkedList, Node } from './circular_linked_list.js';
 
-let fen = "8/P7/r7/8/8/4Q3/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+let fen = "8/P4ppp/r7/8/8/4Q3/p2PPPPP/2BQKBNR w KQkq - 0 1";
 let backStack = new Stack();
 let forwardStack = new Stack();
 let isAnalyzing = false;

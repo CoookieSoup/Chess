@@ -48,6 +48,13 @@ export function convert_array_to_fen(array, fen) {
     return newFen;
 }
 
+// export function addEnPassant(fen, col, row){
+//     let fenParts = fen.split(" ");
+//     fenParts[3] = String.fromCharCode(64 + col) + row;
+//     console.log("en pessant square:" + fenParts[3]);
+// }
+
+
 export function increase_halfmove_clock(fen) {
     let fenParts = fen.split(" ");
     fenParts[4]++;

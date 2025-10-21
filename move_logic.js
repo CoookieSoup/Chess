@@ -1,22 +1,23 @@
+import { convert_fen_to_array, convert_array_to_fen, increase_halfmove_clock, reset_halfmove_clock, increase_fullmove_number } from './fen_conversion.js';
+//import { fen } from './main.js';
+// fen = "a";
 export async function executeMoveOnArray(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
-    
+    //addEnPassant(2,3);
     if (!isValid(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) {
         return false;
     }
     switch (pieceArray[rowFrom][colFrom]){
         case "P":
-            if (!whiteWillPromote(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) {
-                if (!whitePawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) {
-                    console.log("bad");
-                    return false;
-                }
+            if (!whiteWillPromote(pieceArray, colFrom, rowFrom, colTo, rowTo)) {
+                if (!whitePawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) return false;
             }
-            else {
-                await doPromotion(fen, pieceArray, colFrom, rowFrom, colTo, rowTo);
-            }
+            else await doPromotion(fen, pieceArray, colFrom, rowFrom, colTo, rowTo);
             return true;
         case "p":
-            if (!(await blackPawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo))) return false;
+           if (!blackWillPromote(pieceArray, colFrom, rowFrom, colTo, rowTo)) {
+                if (!blackPawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo)) return false;
+            }
+            else await doPromotion(fen, pieceArray, colFrom, rowFrom, colTo, rowTo);
             return true;
         case "r":
         case "R":
@@ -44,31 +45,25 @@ export async function executeMoveOnArray(fen, pieceArray, colFrom, rowFrom, colT
     }
 }
 
-
 function isValid(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
     let fenParts = fen.split(" ");
     let activeColor = fenParts[1];
     let pieceFrom = pieceArray[rowFrom][colFrom];
     let pieceTo = pieceArray[rowTo][colTo];
-    if (activeColor === "w" && pieceFrom === pieceFrom.toLowerCase()) return false; //white moves a black piece
-    if (activeColor === "b" && pieceFrom === pieceFrom.toUpperCase()) return false; //black moves a white piece
-    if (activeColor === "w" && pieceTo === pieceTo.toUpperCase() && pieceTo !== "") return false; //white takes white //last statement needed
-    if (activeColor === "b" && pieceTo === pieceTo.toLowerCase() && pieceTo !== "") return false; //black takes black //last statement needed
-    if (pieceFrom === "") return false; //tries to move an empty square
+    if (activeColor === "w" && pieceFrom === pieceFrom.toLowerCase()) return false;
+    if (activeColor === "b" && pieceFrom === pieceFrom.toUpperCase()) return false;
+    if (activeColor === "w" && pieceTo === pieceTo.toUpperCase() && pieceTo !== "") return false;
+    if (activeColor === "b" && pieceTo === pieceTo.toLowerCase() && pieceTo !== "") return false;
+    if (pieceFrom === "") return false;
     return true;
 }
 
-function whiteWillPromote(fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
-    let toPiece = pieceArray[rowTo][colTo];
-    if (rowTo === rowFrom - 1 ) {
-        if ((colTo === colFrom && toPiece === "") || Math.abs(colFrom - colTo) === 1 && toPiece !== ""){
-            if (rowTo === 0) {
-                console.log(6);
-                return true;
-            } 
-        }
-    }
-    return false;
+function whiteWillPromote(pieceArray, colFrom, rowFrom, colTo, rowTo){
+    return (0 === rowFrom - 1 && ((colTo === colFrom && pieceArray[rowTo][colTo] === "") || Math.abs(colFrom - colTo) === 1 && pieceArray[rowTo][colTo] !== ""));
+}
+
+function blackWillPromote(pieceArray, colFrom, rowFrom, colTo, rowTo){
+    return (7 === rowFrom + 1 && ((colTo === colFrom && pieceArray[rowTo][colTo] === "") || Math.abs(colFrom - colTo) === 1 && pieceArray[rowTo][colTo] !== ""));
 }
 
 function whitePawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
@@ -80,6 +75,21 @@ function whitePawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
         }
     }
     else if (rowTo === rowFrom - 2 && rowFrom === 6 && pieceArray[5][rowFrom] === ""){
+        movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+        return true;
+    }
+    return false;
+}
+
+function blackPawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
+    let toPiece = pieceArray[rowTo][colTo];
+    if (rowTo === rowFrom + 1 ) {
+        if ((colTo === colFrom && toPiece === "") || Math.abs(colFrom - colTo) === 1 && toPiece !== ""){
+            movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+            return true;
+        }
+    }
+    else if (rowTo === rowFrom + 2 && rowFrom === 1 && pieceArray[2][rowFrom] === ""){
         movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
         return true;
     }
@@ -107,70 +117,14 @@ function doPromotion(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
     });
 }
 
-function blackPawnCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo) {
-    let toPiece = pieceArray[rowTo][colTo];
-    if (rowTo === rowFrom + 1 ) {
-        if ((colTo === colFrom && toPiece === "") || Math.abs(colFrom - colTo) === 1 && toPiece !== ""){
-            movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
-            return true;
-        }
-    }
-    else if (rowTo === rowFrom + 2 && rowFrom === 1 && pieceArray[2][rowFrom] === ""){
-        movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
-        return true;
-    }
-    return false;
-}
-
-// function promotionCase(fen, pieceArray, colTo, rowTo, promotionPiece){
-//     let fenParts = fen.split(" ");
-//     console.log(promotionPiece);
-//     let a = promotionPiece;
-//     if (fenParts[1] === "w"){
-//         pieceArray[rowTo][colTo] = a;
-//     }
-//     else pieceArray[rowTo][colTo] = a.toLowerCase();
-//     console.log(pieceArray[rowTo][colTo]);
-    
-//     document.getElementById("promotionInput").style.display = "none";
-// }
-
 function rookCase (fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
     if (colFrom !== colTo && rowFrom !== rowTo) return false;
-    let pieceInPath = false;
-    if (colFrom !== colTo) {
-        for (let i = 1; i < Math.abs(colFrom - colTo); i++){
-            if (colFrom > colTo){
-                if (pieceArray[rowFrom][colFrom - i] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-            if (colFrom < colTo){
-                if (pieceArray[rowFrom][colFrom + i] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-        }
+    for (let i = 1; i < Math.abs(colFrom - colTo) + Math.abs(rowFrom - rowTo); i++){
+        if (colFrom > colTo && pieceArray[rowFrom][colFrom - i] !== "") return false;
+        if (colFrom < colTo && pieceArray[rowFrom][colFrom + i] !== "") return false;
+        if (rowFrom > rowTo && pieceArray[rowFrom - i][colFrom] !== "") return false;
+        if (rowFrom < rowTo && pieceArray[rowFrom + i][colFrom] !== "") return false;
     }
-    else {
-        for (let i = 1; i < Math.abs(rowFrom - rowTo); i++){
-            if (rowFrom > rowTo){
-                if (pieceArray[rowFrom - i][colFrom] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-            if (rowFrom < rowTo){
-                if (pieceArray[rowFrom + i][colFrom] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-        }
-    }
-    if (pieceInPath) return false;
     movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
     return true;
 }
@@ -179,40 +133,12 @@ function bishopCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
         console.log("triggered bishop error");
         return false;
     }
-    let pieceInPath = false;
-    if (rowFrom > rowTo) { //up
-        for (let i = 1; i < Math.abs(colFrom - colTo) - 1; i++){
-            if (colFrom > colTo){ //left
-                if (pieceArray[rowFrom - i][colFrom - i] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-            else { //right
-                if (pieceArray[rowFrom - i][colFrom + i] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-        }
+    for (let i = 1; i < Math.abs(colFrom - colTo); i++){
+        if (colFrom > colTo && rowFrom > rowTo && pieceArray[rowFrom - i][colFrom - i] !== "") return false;//left up
+        if (colFrom < colTo && rowFrom > rowTo && pieceArray[rowFrom - i][colFrom + i] !== "") return false;//right up
+        if (colFrom > colTo && rowFrom < rowTo && pieceArray[rowFrom + i][colFrom - i] !== "") return false;//left down
+        if (colFrom < colTo && rowFrom < rowTo && pieceArray[rowFrom + i][colFrom + i] !== "") return false;//right down
     }
-    else { //down
-        for (let i = 1; i < Math.abs(colFrom - colTo) - 1; i++){
-            if (colFrom > colTo){ //left
-                if (pieceArray[rowFrom + i][colFrom - i] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-            else { //right
-                if (pieceArray[rowFrom + i][colFrom + i] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-        }
-    }
-    if (pieceInPath) return false;
     movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
     return true;
 }
@@ -240,73 +166,22 @@ function queenCase(fen, pieceArray, colFrom, rowFrom, colTo, rowTo){
         console.log("triggered queen error");
         return false;
     }
-    let pieceInPath = false;
-    if (rowFrom == rowTo) {
+    if ((rowFrom === rowTo && colFrom !== colTo) || (rowFrom !== rowTo && colFrom === colTo)) {
+        for (let i = 1; i < Math.abs(colFrom - colTo) + Math.abs(rowFrom - rowTo); i++){
+            if (colFrom > colTo && pieceArray[rowFrom][colFrom - i] !== "") return false;
+            if (colFrom < colTo && pieceArray[rowFrom][colFrom + i] !== "") return false;
+            if (rowFrom > rowTo && pieceArray[rowFrom - i][colFrom] !== "") return false;
+            if (rowFrom < rowTo && pieceArray[rowFrom + i][colFrom] !== "") return false;
+        }
+    }
+    else if (Math.abs(colFrom - colTo) === Math.abs(rowFrom - rowTo)) { 
         for (let i = 1; i < Math.abs(colFrom - colTo); i++){
-            if (colFrom > colTo){
-                if (pieceArray[rowFrom][colFrom - i] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-            if (colFrom < colTo){
-                if (pieceArray[rowFrom][colFrom + i] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
+            if (colFrom > colTo && rowFrom > rowTo && pieceArray[rowFrom - i][colFrom - i] !== "") return false;//left up
+            if (colFrom < colTo && rowFrom > rowTo && pieceArray[rowFrom - i][colFrom + i] !== "") return false;//right up
+            if (colFrom > colTo && rowFrom < rowTo && pieceArray[rowFrom + i][colFrom - i] !== "") return false;//left down
+            if (colFrom < colTo && rowFrom < rowTo && pieceArray[rowFrom + i][colFrom + i] !== "") return false;//right down
         }
     }
-    else if (colFrom === colTo)  {
-        for (let i = 1; i < Math.abs(rowFrom - rowTo); i++){
-            if (rowFrom > rowTo){
-                if (pieceArray[rowFrom - i][colFrom] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-            if (rowFrom < rowTo){
-                if (pieceArray[rowFrom + i][colFrom] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-        }
-    }
-    else if (rowFrom > rowTo) { //up
-        for (let i = 1; i < Math.abs(colFrom - colTo) - 1; i++){
-            if (colFrom > colTo){ //left
-                if (pieceArray[rowFrom - i][colFrom - i] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-            else { //right
-                if (pieceArray[rowFrom - i][colFrom + i] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-        }
-    }
-    else { //down
-        console.log("down");
-        for (let i = 1; i < Math.abs(colFrom - colTo) - 1; i++){
-            if (colFrom > colTo){ //left
-                if (pieceArray[rowFrom + i][colFrom - i] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-            else { //right
-                if (pieceArray[rowFrom + i][colFrom + i] !== ""){
-                    pieceInPath = true;
-                    break;
-                }
-            }
-        }
-    }
-    if (pieceInPath) return false;
     movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
     return true;
 }
