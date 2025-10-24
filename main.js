@@ -1,9 +1,8 @@
 import { Stack } from './stack.js';
-import { convert_fen_to_array, convert_array_to_fen, increase_halfmove_clock, reset_halfmove_clock, increase_fullmove_number } from './fen_conversion.js';
+import { convertArrayToFen, convertFenToArray } from './fen_conversion.js';
 import { executeMoveOnArray } from './move_logic.js';
 import { updateEvalBar } from './send_stockfish_api_request.js';
 import { circularLinkedList, Node } from './circular_linked_list.js';
-
 let fen = "8/P4ppp/r7/8/8/4Q3/p2PPPPP/2BQKBNR w KQkq - 0 1";
 let backStack = new Stack();
 let forwardStack = new Stack();
@@ -11,10 +10,17 @@ let isAnalyzing = false;
 let myCircularLinkedList = new circularLinkedList();
 let myCLLIndex = 0;
 
+export function getFen() {
+    return fen;
+}
+export function setFen(newValue) {
+    fen = newValue;
+}
 
 function drawBoard(fen) {
-    let pieceArray = convert_fen_to_array(fen);
+    let pieceArray = convertFenToArray(fen);
     console.log(pieceArray);
+    console.log(fen);
     let canvas = document.getElementById("board");
     let canvas_context = canvas.getContext("2d");
     let square_Size = 100;
@@ -55,13 +61,13 @@ function drawBoard(fen) {
 
 async function parseMove() {
     let userText = document.getElementById("userInput").value;
-    let pieceArray = convert_fen_to_array(fen);
+    let pieceArray = convertFenToArray(fen);
     let colFrom = userText.substring(0, 2).charCodeAt(0) - 97;
     let rowFrom = 8 - parseInt(userText.substring(0, 2).charAt(1));
     let colTo = userText.substring(3, 5).charCodeAt(0) - 97;
     let rowTo = 8 - parseInt(userText.substring(3, 5).charAt(1));
     
-    if (!(await executeMoveOnArray(fen, pieceArray, colFrom, rowFrom, colTo, rowTo))) {
+    if (!(await executeMoveOnArray(pieceArray, colFrom, rowFrom, colTo, rowTo))) {
         document.getElementById("invalidMoveMessage").style.display = "block";
         return;
     }
@@ -69,7 +75,7 @@ async function parseMove() {
     document.getElementById("prevButton").style.display = "inline";
 
     backStack.push(fen);
-    fen = convert_array_to_fen(pieceArray, fen);
+    fen = convertArrayToFen(pieceArray, fen);
     drawBoard(fen);
 }
 

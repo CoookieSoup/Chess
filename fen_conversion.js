@@ -1,4 +1,6 @@
-export function convert_fen_to_array(fen) {
+import { getFen, setFen } from './main.js';
+
+export function convertFenToArray(fen) {
     let array = Array.from({ length: 8 }, () => Array(8).fill(""));
     let fenParts = fen.split(" ");
     let board = fenParts[0].split("/");
@@ -17,7 +19,7 @@ export function convert_fen_to_array(fen) {
     return array;
 }
 
-export function convert_array_to_fen(array, fen) {
+export function convertArrayToFen(array, fen) {
     let fenParts = fen.split(" ");
     if (fenParts[1] == 'w') fenParts[1] = 'b';
     else {
@@ -48,25 +50,26 @@ export function convert_array_to_fen(array, fen) {
     return newFen;
 }
 
-// export function addEnPassant(fen, col, row){
-//     let fenParts = fen.split(" ");
-//     fenParts[3] = String.fromCharCode(64 + col) + row;
-//     console.log("en pessant square:" + fenParts[3]);
-// }
-
-
-export function increase_halfmove_clock(fen) {
-    let fenParts = fen.split(" ");
-    fenParts[4]++;
-    return fenParts.join(" ");
+export function addEnPassant(colTo, rowTo){
+    let fenParts = getFen().split(" ");
+    fenParts[3] = String.fromCharCode(96 + colTo + 1) + (rowTo - 1);
+    let newFen = fenParts[0] + " " + fenParts[1] + " " + fenParts[2] + " " + fenParts[3] + " " + fenParts[4] + " " + fenParts[5];
+    return newFen;
 }
-export function reset_halfmove_clock(fen) {
-    let fenParts = fen.split(" ");
+
+
+export function resetHalfmoveClock() {
+    let fenParts = getFen().split(" ");
     fenParts[4] = 0;
-    return fenParts.join(" ");
+    setFen(fenParts.join(" "));
 }
-export function increase_fullmove_number(fen) {
-    let fenParts = fen.split(" ");
-    if (fenParts[1] === 'b') fenParts[5]++;
-    return fenParts.join(" ");
+// export function isWhiteTurn() {
+//     let fenParts = getFen().split(" ");
+//     if (fenParts[1] === 'w') return true;
+//     return false;
+// }
+export function resetEnPassantFen(){
+    let fenParts = getFen().split(" ");
+    fenParts[3] = "-";
+    setFen(fenParts.join(" "));
 }
