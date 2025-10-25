@@ -52,9 +52,9 @@ export function convertArrayToFen(array, fen) {
 
 export function addEnPassant(colTo, rowTo){
     let fenParts = getFen().split(" ");
-    fenParts[3] = String.fromCharCode(96 + colTo + 1) + (rowTo - 1);
-    let newFen = fenParts[0] + " " + fenParts[1] + " " + fenParts[2] + " " + fenParts[3] + " " + fenParts[4] + " " + fenParts[5];
-    return newFen;
+    if (fenParts[1] === 'w') fenParts[3] = String.fromCharCode(96 + colTo + 1) + (rowTo - 1);
+    else fenParts[3] = String.fromCharCode(96 + colTo + 1) + (rowTo + 3);
+    setFen(fenParts[0] + " " + fenParts[1] + " " + fenParts[2] + " " + fenParts[3] + " " + fenParts[4] + " " + fenParts[5]);
 }
 
 
@@ -72,4 +72,12 @@ export function resetEnPassantFen(){
     let fenParts = getFen().split(" ");
     fenParts[3] = "-";
     setFen(fenParts.join(" "));
+}
+
+export function isSquareEnPassant(colTo, rowTo){
+    let square = getFen().split(" ")[3];
+    let colEnPessant = square[0].charCodeAt(0) - 97;
+    let rowEnPessant = 8 - parseInt(square[1]);
+    console.log(colTo === colEnPessant && rowTo === rowEnPessant);
+    return (colTo === colEnPessant && rowTo === rowEnPessant);
 }

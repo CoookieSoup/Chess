@@ -1,4 +1,4 @@
-import { resetHalfmoveClock, addEnPassant, resetEnPassantFen } from './fen_conversion.js';
+import { resetHalfmoveClock, addEnPassant, resetEnPassantFen, isSquareEnPassant } from './fen_conversion.js';
 import { getFen, setFen } from './main.js';
 
 export async function executeMoveOnArray(pieceArray, colFrom, rowFrom, colTo, rowTo) {
@@ -72,10 +72,15 @@ function whitePawnCase(pieceArray, colFrom, rowFrom, colTo, rowTo) {
             movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
             return true;
         }
+        else if (Math.abs(colFrom - colTo) === 1 && isSquareEnPassant(colTo, rowTo)){
+            movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+            pieceArray[rowTo + 1][colTo] = "";
+            return true;
+        }
     }
     else if (rowTo === rowFrom - 2 && rowFrom === 6 && pieceArray[5][rowFrom] === ""){
         movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
-        setFen(addEnPassant(colTo, rowTo));
+        addEnPassant(colTo, rowTo);
         return true;
     }
     return false;
@@ -88,9 +93,17 @@ function blackPawnCase(pieceArray, colFrom, rowFrom, colTo, rowTo) {
             movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
             return true;
         }
+        else if (Math.abs(colFrom - colTo) === 1 && isSquareEnPassant(colTo, rowTo)){
+            movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+            console.log(pieceArray[rowTo - 1][colTo]);
+            pieceArray[rowTo - 1][colTo] = "";
+
+            return true;
+        }
     }
     else if (rowTo === rowFrom + 2 && rowFrom === 1 && pieceArray[2][rowFrom] === ""){
         movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+        addEnPassant(colTo, rowTo);
         return true;
     }
     return false;
