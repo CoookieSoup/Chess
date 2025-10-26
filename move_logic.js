@@ -1,5 +1,5 @@
-import { resetHalfmoveClock, addEnPassant, resetEnPassantFen, isSquareEnPassant } from './fen_conversion.js';
-import { getFen, setFen } from './main.js';
+import { resetHalfmoveClock, addEnPassant, resetEnPassantFen, isSquareEnPassant, canCastle } from './fen_conversion.js';
+import { getFen, setFen, } from './main.js';
 
 export async function executeMoveOnArray(pieceArray, colFrom, rowFrom, colTo, rowTo) {
     if (!isValid(pieceArray, colFrom, rowFrom, colTo, rowTo)) {
@@ -95,7 +95,6 @@ function blackPawnCase(pieceArray, colFrom, rowFrom, colTo, rowTo) {
         }
         else if (Math.abs(colFrom - colTo) === 1 && isSquareEnPassant(colTo, rowTo)){
             movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
-            console.log(pieceArray[rowTo - 1][colTo]);
             pieceArray[rowTo - 1][colTo] = "";
 
             return true;
@@ -115,16 +114,26 @@ function doPromotion(pieceArray, colFrom, rowFrom, colTo, rowTo) {
         document.getElementById("promotionButton").style.display = "block";
         document.getElementById("promotionButton").addEventListener('click', handlePromotion);
         function handlePromotion() {
-            let promotionPiece = document.getElementById("promotionInput").value;
-            movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
+            console.log ("promotion");
+            let promotionPiece = document.getElementById("promotionInput").value.toLowerCase();
+
+            if (promotionPiece.toLowerCase() === "k") promotionPiece = "n";
+            if (promotionPiece !== "n" && promotionPiece !== "q" && promotionPiece !== "b" && promotionPiece !== "r") {
+                document.getElementById("invalidMoveMessage").style.display = "block";
+                return;
+            }
             
             document.getElementById("promotionInput").style.display = "none";
             document.getElementById("promotionButton").style.display = "none";
             document.getElementById("promotionButton").removeEventListener('click', handlePromotion);
-
-            if (promotionPiece === "k" || promotionPiece === "K") promotionPiece = "n";
-            if (getFen().split(" ")[1] === "w") pieceArray[rowTo][colTo] = promotionPiece.toUpperCase();
-            else pieceArray[rowTo][colTo] = promotionPiece.toLowerCase();
+            if (getFen().split(" ")[1] === "w") {
+                pieceArray[rowTo][colTo] = promotionPiece.toUpperCase();
+            } else {
+                pieceArray[rowTo][colTo] = promotionPiece.toLowerCase();
+            }
+            
+            pieceArray[rowFrom][colFrom] = "";
+            document.getElementById("promotionInput").value = "";
             resolve(true);
         }
     });
@@ -167,6 +176,11 @@ function knightCase(pieceArray, colFrom, rowFrom, colTo, rowTo){
 
 function kingCase(pieceArray, colFrom, rowFrom, colTo, rowTo){
     if (Math.abs(colFrom - colTo) > 1 || Math.abs(rowFrom - rowTo) > 1) {
+        if ((colTo + "" + rowTo === '17' || colTo + "" + rowTo ===  '67' || colTo + "" + rowTo ===  '10' || colTo + "" + rowTo ===  '60') && canCastle(pieceArray, colFrom, rowFrom, colTo, rowTo)){
+            console.log("castle time");
+            castleMove(pieceArray, colFrom, rowFrom, colTo, rowTo);
+            return true;
+        }
         console.log("triggered king error");
         return false;
     }
@@ -200,9 +214,36 @@ function queenCase(pieceArray, colFrom, rowFrom, colTo, rowTo){
 }
 
 function movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo){
-    if (pieceArray[rowTo][colTo] !== "" || pieceArray[rowFrom][colFrom].toLowerCase() === "p") resetHalfmoveClock(); //halfmove reset rule
+    if (pieceArray[rowTo][colTo] !== "" || pieceArray[rowFrom][colFrom].toLowerCase() === "p") resetHalfmoveClock();
     resetEnPassantFen();
     pieceArray[rowTo][colTo] = pieceArray[rowFrom][colFrom];
     pieceArray[rowFrom][colFrom] = "";
+}
+
+function castleMove(pieceArray, colFrom, rowFrom, colTo, rowTo){
+    resetEnPassantFen();
+    pieceArray[rowTo][colTo] = pieceArray[rowFrom][colFrom];
+    pieceArray[rowFrom][colFrom] = "";
+    let key = colTo + "" + rowTo;
+    switch(key){
+        case "17":
+            pieceArray[7][2] = "R";
+            pieceArray[7][0] = "";
+            break;
+        case "67":
+            pieceArray[7][5] = "R";
+            pieceArray[7][7] = "";
+            break;
+        case "10":
+            pieceArray[0][2] = "r";
+            pieceArray[0][0] = "";
+            break;
+        case "60":
+            pieceArray[0][5] = "r";
+            pieceArray[0][7] = "";
+            break;
+        default:
+            console.log("blogai");
+    }
 }
 

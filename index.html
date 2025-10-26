@@ -6,7 +6,7 @@
     <title>Document</title>
 </head>
 <body>
-    <div id="invalidMoveMessage" style="color: red; font-weight: bold;"> Invalid move </div>
+    <div id="invalidMoveMessage" style="color: red; font-weight: bold; display: none"> Invalid move </div>
     <canvas id="board" width="800" height="800"></canvas>
     <input type="text" id="userInput" placeholder="Input move ex. b2 b4">
     <button id="submitButton">Submit Move</button>
@@ -14,8 +14,8 @@
     <div><button id="nextButton" style="display: none;">Next Move</button></div>
     <div><button id="analyzeButton">Analyze game</button></div>
     <span id="evaluation"></span>
-    <input type="text" id="promotionInput" placeholder="Type piece to promote to: P-pawn, B-bishop, R-rook, K-knight, Q-queen" style="width: 430px;">
-    <button id="promotionButton">Submit Piece</button>
+    <input type="text" id="promotionInput" placeholder="Type piece to promote to: P-pawn, B-bishop, R-rook, K-knight, Q-queen" style="width: 430px; display: none">
+    <button id="promotionButton" style="display: none">Submit Piece</button>
     <script type="module" src="main.js"></script>
 </body>
 </html>

@@ -54,7 +54,7 @@ export function addEnPassant(colTo, rowTo){
     let fenParts = getFen().split(" ");
     if (fenParts[1] === 'w') fenParts[3] = String.fromCharCode(96 + colTo + 1) + (rowTo - 1);
     else fenParts[3] = String.fromCharCode(96 + colTo + 1) + (rowTo + 3);
-    setFen(fenParts[0] + " " + fenParts[1] + " " + fenParts[2] + " " + fenParts[3] + " " + fenParts[4] + " " + fenParts[5]);
+    setFen(fenParts.join(" "));
 }
 
 
@@ -78,6 +78,31 @@ export function isSquareEnPassant(colTo, rowTo){
     let square = getFen().split(" ")[3];
     let colEnPessant = square[0].charCodeAt(0) - 97;
     let rowEnPessant = 8 - parseInt(square[1]);
-    console.log(colTo === colEnPessant && rowTo === rowEnPessant);
     return (colTo === colEnPessant && rowTo === rowEnPessant);
+}
+
+export function canCastle(pieceArray, colFrom, rowFrom, colTo, rowTo){
+    let fenParts = getFen().split(" ");
+    let fenCastle = fenParts[2];
+    let castleMap = {
+        '17': 'Q', '67': 'K', '10': 'q', '60': 'k'
+    };
+    let key = colTo + "" + rowTo;
+    let castleChar = castleMap[key];
+    if (castleChar && fenCastle.includes(castleChar)) {
+        let modifier = 1;
+        if (colTo < colFrom)  modifier = -1;    
+        console.log(modifier);
+        console.log (Math.abs(colTo - colFrom) + 1);
+        for (let i = 1; i !== Math.abs(colTo - colFrom) + 1; i++){
+            console.log(rowFrom, colFrom  + i * modifier)
+            if (pieceArray[rowFrom][colFrom  + i * modifier] !== "") return false;
+        }
+        fenCastle = fenCastle.replace(castleChar, "");
+        if (fenCastle === "") fenCastle = "-";
+        fenParts[2] = fenCastle;
+        setFen(fenParts.join(" "));
+        return true;
+    }
+    return false;
 }

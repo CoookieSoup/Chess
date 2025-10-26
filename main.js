@@ -3,7 +3,7 @@ import { convertArrayToFen, convertFenToArray } from './fen_conversion.js';
 import { executeMoveOnArray } from './move_logic.js';
 import { updateEvalBar } from './send_stockfish_api_request.js';
 import { circularLinkedList, Node } from './circular_linked_list.js';
-let fen = "8/P4ppp/r8/6PP/3p4/8/p2PPPPP/2BQKBNR w KQkq - 0 1";
+let fen = "8/P4ppp/r8/6PP/3p4/8/p2PPPPP/3QK2R w KQkq - 0 1";
 let backStack = new Stack();
 let forwardStack = new Stack();
 let isAnalyzing = false;
@@ -19,7 +19,7 @@ export function setFen(newValue) {
 
 function drawBoard(fen) {
     let pieceArray = convertFenToArray(fen);
-    console.log(pieceArray);
+    // console.log(pieceArray);
     console.log(fen);
     let canvas = document.getElementById("board");
     let canvas_context = canvas.getContext("2d");
@@ -154,14 +154,10 @@ function analyzeGame() {
 drawBoard(fen);
  
 
-document.getElementById("invalidMoveMessage").style.display = "none";
-document.getElementById("promotionInput").style.display = "none";
-document.getElementById("promotionButton").style.display = "none";
+
 document.getElementById("submitButton").addEventListener("click", parseMove);
-document.getElementById("userInput").addEventListener('keyup', function(event) {
-    if (event.key === 'Enter') {
-        parseMove();
-    }
+document.getElementById("userInput").addEventListener('keyup', (event) => {
+    if (event.key === 'Enter') parseMove();
 });
 document.getElementById("prevButton").addEventListener("click", undoMove);
 document.getElementById("nextButton").addEventListener("click", redoMove);
