@@ -1,4 +1,4 @@
-import { resetHalfmoveClock, addEnPassant, resetEnPassantFen, isSquareEnPassant, canCastle } from './fen_conversion.js';
+import { resetHalfmoveClock, addEnPassant, resetEnPassantFen, isSquareEnPassant, canCastle, removeFenCastle } from './fen_conversion.js';
 import { getFen, setFen, } from './main.js';
 
 export async function executeMoveOnArray(pieceArray, colFrom, rowFrom, colTo, rowTo) {
@@ -147,6 +147,9 @@ function rookCase (pieceArray, colFrom, rowFrom, colTo, rowTo){
         if (rowFrom > rowTo && pieceArray[rowFrom - i][colFrom] !== "") return false;
         if (rowFrom < rowTo && pieceArray[rowFrom + i][colFrom] !== "") return false;
     }
+    if ((rowFrom === 0 && colFrom === 7) || (rowFrom === 0 && colFrom === 0) || (rowFrom === 7 && colFrom === 7) || (rowFrom === 7 && colFrom === 0)){
+        removeFenCastle(pieceArray, colFrom, rowFrom, 1);
+    }
     movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
     return true;
 }
@@ -184,6 +187,7 @@ function kingCase(pieceArray, colFrom, rowFrom, colTo, rowTo){
         console.log("triggered king error");
         return false;
     }
+    removeFenCastle(pieceArray, colFrom, rowFrom, 2);
     movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
     return true;
 }

@@ -3,7 +3,7 @@ import { convertArrayToFen, convertFenToArray } from './fen_conversion.js';
 import { executeMoveOnArray } from './move_logic.js';
 import { updateEvalBar } from './send_stockfish_api_request.js';
 import { circularLinkedList, Node } from './circular_linked_list.js';
-let fen = "8/P4ppp/r8/6PP/3p4/8/p2PPPPP/3QK2R w KQkq - 0 1";
+let fen = "r3k3/P4ppp/r8/6PP/3p4/8/p2PPPPP/3QK2R w KQkq - 0 1";
 let backStack = new Stack();
 let forwardStack = new Stack();
 let isAnalyzing = false;

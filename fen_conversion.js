@@ -92,17 +92,52 @@ export function canCastle(pieceArray, colFrom, rowFrom, colTo, rowTo){
     if (castleChar && fenCastle.includes(castleChar)) {
         let modifier = 1;
         if (colTo < colFrom)  modifier = -1;    
-        console.log(modifier);
-        console.log (Math.abs(colTo - colFrom) + 1);
         for (let i = 1; i !== Math.abs(colTo - colFrom) + 1; i++){
-            console.log(rowFrom, colFrom  + i * modifier)
             if (pieceArray[rowFrom][colFrom  + i * modifier] !== "") return false;
         }
-        fenCastle = fenCastle.replace(castleChar, "");
+        if (castleChar === "K" || castleChar === "Q"){
+            fenCastle = fenCastle.replace("K", "");
+            fenCastle = fenCastle.replace("Q", "");
+        }
+        else if (castleChar === "k" || castleChar === "q"){
+            fenCastle = fenCastle.replace("k", "");
+            fenCastle = fenCastle.replace("q", "");
+        }
         if (fenCastle === "") fenCastle = "-";
         fenParts[2] = fenCastle;
         setFen(fenParts.join(" "));
         return true;
     }
     return false;
+}
+
+export function removeFenCastle(pieceArray, colFrom, rowFrom, variation){
+    let fenParts = getFen().split(" ");
+    let fenCastle = fenParts[2];
+    if (variation === 2){
+        if (pieceArray[rowFrom][colFrom] === "K" && (fenCastle.includes("K") || fenCastle.includes("Q"))){
+        fenCastle = fenCastle.replace("K", "");
+        fenCastle = fenCastle.replace("Q", "");
+        }
+        else if (pieceArray[rowFrom][colFrom] === "k" && (fenCastle.includes("k") || fenCastle.includes("q"))){
+            fenCastle = fenCastle.replace("k", "");
+            fenCastle = fenCastle.replace("q", "");
+        }
+    }
+    else {
+        if (rowFrom === 0 && colFrom === 7){
+            fenCastle = fenCastle.replace("k", "");
+        }
+        if (rowFrom === 0 && colFrom === 0){
+            fenCastle = fenCastle.replace("q", "");
+        }
+        if (rowFrom === 7 && colFrom === 0){
+            fenCastle = fenCastle.replace("Q", "");
+        }
+        if (rowFrom === 7 && colFrom === 7){
+            fenCastle = fenCastle.replace("K", "");
+        }
+    }
+    fenParts[2] = fenCastle;
+    setFen(fenParts.join(" "));
 }
