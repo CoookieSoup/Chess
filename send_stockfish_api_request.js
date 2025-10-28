@@ -19,7 +19,7 @@ export function updateEvalBar (fen) {
         if (response.mate) {
             document.getElementById("evaluation").textContent = "Mate in " + response.mate + " moves";
         } else {
-            document.getElementById("evaluation").textContent = response.evaluation;
+            document.getElementById("evaluation").innerHTML = response.evaluation + '<br>' + "Best move: " + response.bestmove;
         }
     }
     });

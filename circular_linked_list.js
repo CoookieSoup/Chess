@@ -14,15 +14,15 @@ export class circularLinkedList{
    
   //Get element at specific index
   getElementAt = function(index) {
-      if(index >= 0 && index <= this.length){
+    if(index >= 0 && index < this.length){  // ← FIXED: < instead of <=
         let node = this.head;
         for(let i = 0; i < index && node != null; i++){
-          node = node.next;
+            node = node.next;
         }
         return node;
-      }
-      return undefined;
     }
+    return undefined;
+}
 
   //Add new node
   append = function(element){
@@ -78,32 +78,38 @@ export class circularLinkedList{
   //Remove at any position
   removeAt = function (index) {
     if(index >= 0 && index < this.length){
-      let current = this.head;
-      
-      //Remove from head
-      if(index === 0){
-        if(this.length === 1){
-          this.head = undefined;
+        let current = this.head;
+        
+        //Remove from head
+        if(index === 0){
+            if(this.length === 1){
+                this.head = null;  // Changed from undefined to null
+            }else{
+                const removed = this.head;
+                current = this.getElementAt(this.length - 1);
+                this.head = this.head.next;
+                current.next = this.head;  // Maintain circular reference
+                current = removed;
+            }
         }else{
-          const removed = this.head;
-          current = this.getElementAt(this.length - 1);
-          this.head = this.head.next;
-          current.next = this.head;
-          current = removed;
+            //Remove at given index (middle or end)
+            const previous = this.getElementAt(index - 1);
+            current = previous.next;
+            previous.next = current.next;
+            
+            // If removing the last element, update head's previous reference
+            if(index === this.length - 1){
+                // The new last element should point to head
+                let newLast = this.getElementAt(this.length - 2);
+                if(newLast) newLast.next = this.head;
+            }
         }
-      }else{
-        //Remove at given index (middle or end)
-        const previous = this.getElementAt(index - 1);
-        current = previous.next;
-        previous.next = current.next;
-      }
-      
-      this.length--;
-      return current.element;
+        
+        this.length--;
+        return current.element;
     }
     return undefined;
-  }
-
+}
   //Get the indexOf item 
   indexOf = function(elm){
     let current = this.head,

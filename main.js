@@ -3,12 +3,15 @@ import { convertArrayToFen, convertFenToArray } from './fen_conversion.js';
 import { executeMoveOnArray } from './move_logic.js';
 import { updateEvalBar } from './send_stockfish_api_request.js';
 import { circularLinkedList, Node } from './circular_linked_list.js';
-let fen = "r3k3/P4ppp/r8/6PP/3p4/8/p2PPPPP/3QK2R w KQkq - 0 1";
+import { saveGame,loadGames } from './data_logic.js';
+import { SinglyLinkedList } from './singly_linked_list.js'
+let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let backStack = new Stack();
 let forwardStack = new Stack();
 let isAnalyzing = false;
 let myCircularLinkedList = new circularLinkedList();
 let myCLLIndex = 0;
+let mySinglyLinkedList = new SinglyLinkedList();
 
 export function getFen() {
     return fen;
@@ -82,10 +85,10 @@ async function parseMove() {
 
 function undoMove() {
     if (isAnalyzing){
-        updateEvalBar(fen);
+        
         myCLLIndex--;
         fen = myCircularLinkedList.getElementAt(myCLLIndex).element;
-
+        updateEvalBar(fen);
         document.getElementById("nextButton").style.display = "inline";
         if (myCLLIndex === 0) document.getElementById("prevButton").style.display = "none";
         else document.getElementById("prevButton").style.display = "inline";
@@ -105,10 +108,10 @@ function undoMove() {
 
 function redoMove() {
     if (isAnalyzing){
-        updateEvalBar(fen);
         myCLLIndex++;
         fen = myCircularLinkedList.getElementAt(myCLLIndex).element;
-
+        updateEvalBar(fen);
+        
         document.getElementById("prevButton").style.display = "inline";
         if (myCLLIndex === myCircularLinkedList.size() - 1) {
             document.getElementById("nextButton").style.display = "none";
@@ -130,31 +133,66 @@ function redoMove() {
 }
 
 function analyzeGame() {
-    updateEvalBar(fen);
-    console.log("backstack");
-    while (!backStack.isEmpty()){
-        forwardStack.push(backStack.pop());
-    }
-    forwardStack.print();
+    
+    while (!backStack.isEmpty()) forwardStack.push(backStack.pop());
     isAnalyzing = true;
+
     document.getElementById("analyzeButton").style.display = "none";
     document.getElementById("prevButton").style.display = "none";
     document.getElementById("nextButton").style.display = "inline";
+    document.getElementById("historyViewerButton").style.display = "inline";
+    document.getElementById("historyViewerInput").style.display = "inline";
+
     while (!forwardStack.isEmpty()){
         myCircularLinkedList.append(forwardStack.pop());
     }
     myCircularLinkedList.append(fen);
-    console.log("my list" + myCircularLinkedList.toArray());
     fen = myCircularLinkedList.getElementAt(0).element;
+    updateEvalBar(fen);
+    saveGame(myCircularLinkedList.toArray());
     drawBoard(fen);
 }
 
+function viewGame(){
+    myCLLIndex = 0;
+    let index = document.getElementById("historyViewerInput").value;
+    let currentGame = mySinglyLinkedList.printAtIndex((index - 1));
+    currentGame = currentGame.board;
+    while (!backStack.isEmpty()){
+        backStack.pop();
+    }
+    while (!forwardStack.isEmpty()){
+        forwardStack.pop();
+    }
+    while (!myCircularLinkedList.isEmpty()){
+        myCircularLinkedList.removeAt(0);
+    }
+    for (let i = 0; i < currentGame.length; i++){
+        forwardStack.push(currentGame[i]);
+        myCircularLinkedList.append(currentGame[i]);
+    }
+    forwardStack.print();
+    fen = currentGame[0];
+    updateEvalBar(fen);
+    isAnalyzing = true;
+    document.getElementById("analyzeButton").style.display = "none";
+    document.getElementById("prevButton").style.display = "none";
+    document.getElementById("nextButton").style.display = "inline";
+    document.getElementById("historyViewerButton").style.display = "inline";
+    document.getElementById("historyViewerInput").style.display = "inline";
+    drawBoard(fen);
+}
 
+function load(){
+    let allGames = loadGames();
+    console.log("Game history: ", allGames);
+    for (let game of allGames){
+        mySinglyLinkedList.append(game);
+    }
+}
 
 drawBoard(fen);
  
-
-
 document.getElementById("submitButton").addEventListener("click", parseMove);
 document.getElementById("userInput").addEventListener('keyup', (event) => {
     if (event.key === 'Enter') parseMove();
@@ -162,3 +200,17 @@ document.getElementById("userInput").addEventListener('keyup', (event) => {
 document.getElementById("prevButton").addEventListener("click", undoMove);
 document.getElementById("nextButton").addEventListener("click", redoMove);
 document.getElementById("analyzeButton").addEventListener("click", analyzeGame);
+document.getElementById("historyViewerButton").addEventListener("click", viewGame);
+
+
+window.addEventListener('load', load);
+
+
+
+
+// mySinglyLinkedList.printAtIndex(0);
+// mySinglyLinkedList.print(); // "Apple -> Banana -> Cherry -> Date"
+// console.log(mySinglyLinkedList.printAtIndex(0));
+// mySinglyLinkedList.printAtIndex(0); // "Index 0: Apple"
+
+// console.log(mySinglyLinkedList.get(1)); // "Banana"
