@@ -1,5 +1,5 @@
 function sendStockfishApiRequest(fen) {
-    const url = 'https://stockfish.online/api/s/v2.php' + '?fen=' + fen + '&depth=5';
+    const url = 'https://stockfish.online/api/s/v2.php' + '?fen=' + fen + '&depth=6';
     return fetch(url, {
         method: 'GET',
     })
@@ -21,6 +21,11 @@ export function updateEvalBar (fen) {
         } else {
             document.getElementById("evaluation").innerHTML = response.evaluation + '<br>' + "Best move: " + response.bestmove;
         }
+        // if (response.mate) 
+        //     document.getElementById("evaluation").textContent = "Mate in " + response.mate + " moves";
+
+            // document.getElementById("evaluation").innerHTML = response.evaluation + '<br>' + "Best move: " + response.bestmove;
+        
     }
     });
 }

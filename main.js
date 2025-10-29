@@ -5,6 +5,7 @@ import { updateEvalBar } from './send_stockfish_api_request.js';
 import { circularLinkedList, Node } from './circular_linked_list.js';
 import { saveGame,loadGames } from './data_logic.js';
 import { SinglyLinkedList } from './singly_linked_list.js'
+import { analyzeBoard } from './move_logic.js';
 let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 let backStack = new Stack();
 let forwardStack = new Stack();
@@ -22,6 +23,7 @@ export function setFen(newValue) {
 
 function drawBoard(fen) {
     let pieceArray = convertFenToArray(fen);
+    let targetedSquareArray = analyzeBoard(pieceArray);
     // console.log(pieceArray);
     console.log(fen);
     let canvas = document.getElementById("board");
@@ -31,8 +33,9 @@ function drawBoard(fen) {
     for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
             canvas_context.fillStyle = (row + col) % 2 === 0 ? "rgba(237, 214, 176, 1)" : "rgba(184, 135, 98, 1)";
+            if (targetedSquareArray[row][col] === 'x') canvas_context.fillStyle = "rgba(231, 89, 89, 1)";
             canvas_context.fillRect(col * square_Size, row * square_Size, square_Size, square_Size);
-
+            
             let letter = String.fromCharCode(97 + col);
             let rank = 8 - row;
             let square_id = letter + rank;
@@ -84,11 +87,12 @@ async function parseMove() {
 }
 
 function undoMove() {
+    document.getElementById("analyzeButton").style.display = "none";
     if (isAnalyzing){
-        
         myCLLIndex--;
         fen = myCircularLinkedList.getElementAt(myCLLIndex).element;
         updateEvalBar(fen);
+
         document.getElementById("nextButton").style.display = "inline";
         if (myCLLIndex === 0) document.getElementById("prevButton").style.display = "none";
         else document.getElementById("prevButton").style.display = "inline";
@@ -126,6 +130,7 @@ function redoMove() {
         if (forwardStack.size() === 0) {
             document.getElementById("nextButton").style.display = "none";
             document.getElementById("submitButton").style.display = "inline";
+            document.getElementById("analyzeButton").style.display = "inline";
         }
         else document.getElementById("nextButton").style.display = "inline";
     }
@@ -133,10 +138,12 @@ function redoMove() {
 }
 
 function analyzeGame() {
-    
+
     while (!backStack.isEmpty()) forwardStack.push(backStack.pop());
     isAnalyzing = true;
 
+    document.getElementById("userInput").style.display = "none";
+    document.getElementById("submitButton").style.display = "none";
     document.getElementById("analyzeButton").style.display = "none";
     document.getElementById("prevButton").style.display = "none";
     document.getElementById("nextButton").style.display = "inline";

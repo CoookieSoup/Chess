@@ -7,6 +7,7 @@
 </head>
 <body>
     <div id="invalidMoveMessage" style="color: red; font-weight: bold; display: none"> Invalid move </div>
+    <div id="whoMovesMessage" style="color: black; font-weight: bold; font-size: 30px;"> White's turn </div>
     <canvas id="board" width="800" height="800"></canvas>
     <input type="text" id="userInput" placeholder="Input move ex. b2 b4">
     <button id="submitButton">Submit Move</button>
@@ -16,7 +17,7 @@
     <span id="evaluation"></span>
     <input type="text" id="promotionInput" placeholder="Type piece to promote to: B-bishop, R-rook, K-knight, Q-queen" style="width: 430px; display: none">
     <button id="promotionButton" style="display: none">Submit Piece</button>
-    <div></div><input type="text" id="historyViewerInput" placeholder="Number of the game to view." style="width: 430px; display: none">
+    <div><input type="text" id="historyViewerInput" placeholder="Number of the game to view." style="width: 430px; display: none">
     <button id="historyViewerButton" style="display: none">Submit History Index</button></div>
     <script type="module" src="main.js"></script>
 </body>

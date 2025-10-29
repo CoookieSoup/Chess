@@ -21,8 +21,12 @@ export function convertFenToArray(fen) {
 
 export function convertArrayToFen(array, fen) {
     let fenParts = fen.split(" ");
-    if (fenParts[1] == 'w') fenParts[1] = 'b';
+    if (fenParts[1] === 'w') {
+        fenParts[1] = 'b';
+        document.getElementById("whoMovesMessage").textContent  = "Black's turn";
+    }
     else {
+        document.getElementById("whoMovesMessage").textContent  = "White's turn";
         fenParts[1] = 'w';
         fenParts[5]++;
     }

@@ -2,6 +2,7 @@ import { resetHalfmoveClock, addEnPassant, resetEnPassantFen, isSquareEnPassant,
 import { getFen, setFen, } from './main.js';
 
 export async function executeMoveOnArray(pieceArray, colFrom, rowFrom, colTo, rowTo) {
+    
     if (!isValid(pieceArray, colFrom, rowFrom, colTo, rowTo)) {
         return false;
     }
@@ -251,3 +252,64 @@ function castleMove(pieceArray, colFrom, rowFrom, colTo, rowTo){
     }
 }
 
+export function analyzeBoard(pieceArray) {
+    let fen = getFen();
+    let toMove = fen.split(' ')[1];
+    let opponent;
+    if (toMove === "w") opponent = "b";
+    else opponent = "w";
+    let attackedSquares = Array(8).fill().map(() => Array(8).fill(''));
+    
+    let directions = {
+        'p': toMove === 'w' ? [[1, -1], [1, 1]] : [[-1, -1], [-1, 1]],
+        'n': [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]],
+        'b': [[1, 1], [1, -1], [-1, 1], [-1, -1]],
+        'r': [[1, 0], [-1, 0], [0, 1], [0, -1]],
+        'q': [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]],
+        'k': [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]
+    };
+    
+    function isInBounds(row, col) {
+        return (row >= 0 && row < 8 && col >= 0 && col < 8);
+    }
+    
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            let piece = pieceArray[row][col];
+            if (piece === "") continue;
+            
+            let pieceColor;
+            if (piece === piece.toLowerCase()) pieceColor = "b";
+            else pieceColor = "w";
+
+            if (pieceColor !== opponent) continue;
+            let pieceType = piece.toLowerCase();
+            let pieceDirs = directions[pieceType];
+            for (let [directionRow, directionCol] of pieceDirs) {
+                let newRow = row + directionRow;
+                let newCol = col + directionCol;
+                if ((pieceType === 'p' || pieceType === 'n') && isInBounds(newRow, newCol)) attackedSquares[newRow][newCol] = 'x';
+                else { 
+                    while (isInBounds(newRow, newCol)) {
+                        attackedSquares[newRow][newCol] = 'x';
+                        if (pieceArray[newRow][newCol] !== "") break;
+                        newRow += directionRow;
+                        newCol += directionCol;
+                    }
+                }
+            }   
+        }
+    }
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            if (attackedSquares[row][col] === "x" && pieceArray[row][col] !== "") {
+                if (toMove === "w" && pieceArray[row][col].toLowerCase() === pieceArray[row][col])
+                    attackedSquares[row][col] = "";
+                if (toMove === "b" && pieceArray[row][col].toUpperCase() === pieceArray[row][col])
+                    attackedSquares[row][col] = "";
+            }
+        }
+    }
+    console.log(attackedSquares);
+    return attackedSquares;
+}
