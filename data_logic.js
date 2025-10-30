@@ -16,10 +16,6 @@ export function loadGames() {
     if (saved) {
         let allGames = JSON.parse(saved);
         console.log('Found', allGames.length, 'saved games:');
-        // allGames.forEach((game) => {
-        //     console.log(game);
-        // });
-        //return just the array without json
         return allGames;
     }
     return [];

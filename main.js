@@ -61,8 +61,17 @@ function drawBoard(fen) {
             else piece = "";
             canvas_context.font = 80 + "px normal";
             canvas_context.fillText(piece, col * square_Size + square_Size/9, row * square_Size + square_Size - square_Size/5);
+
+            if (pieceArray[row][col] === "k" && targetedSquareArray[row][col] === "x")  {
+                document.getElementById("checkMessage").textContent  = "Black is in check";
+            }
+            if (pieceArray[row][col] === "K" && targetedSquareArray[row][col] === "x")  {
+                document.getElementById("checkMessage").textContent  = "White is in check";
+            }
+
         }
     }
+    
 }
 
 async function parseMove() {
