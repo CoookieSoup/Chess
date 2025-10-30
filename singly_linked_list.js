@@ -66,4 +66,8 @@ export class SinglyLinkedList {
     getSize() {
         return this.size;
     }
+    clear() {
+        this.head = null;
+        this.size = 0;
+    }
 }

@@ -61,17 +61,12 @@ export function addEnPassant(colTo, rowTo){
     setFen(fenParts.join(" "));
 }
 
-
 export function resetHalfmoveClock() {
     let fenParts = getFen().split(" ");
     fenParts[4] = 0;
     setFen(fenParts.join(" "));
 }
-// export function isWhiteTurn() {
-//     let fenParts = getFen().split(" ");
-//     if (fenParts[1] === 'w') return true;
-//     return false;
-// }
+
 export function resetEnPassantFen(){
     let fenParts = getFen().split(" ");
     fenParts[3] = "-";

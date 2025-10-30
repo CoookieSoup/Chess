@@ -252,12 +252,17 @@ function castleMove(pieceArray, colFrom, rowFrom, colTo, rowTo){
     }
 }
 
-export function analyzeBoard(pieceArray) {
+export function analyzeBoard(pieceArray, needReverse) {
     let fen = getFen();
     let toMove = fen.split(' ')[1];
     let opponent;
     if (toMove === "w") opponent = "b";
     else opponent = "w";
+    if (needReverse){
+        let temp = toMove;
+        toMove = opponent;
+        opponent = temp;
+    }
     let attackedSquares = Array(8).fill().map(() => Array(8).fill(''));
     
     let directions = {
@@ -269,10 +274,10 @@ export function analyzeBoard(pieceArray) {
         'k': [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]
     };
     
-    function isInBounds(row, col) {
-        return (row >= 0 && row < 8 && col >= 0 && col < 8);
-    }
     
+    
+    let howManyPiecesSeeKing = 0;
+
     for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
             let piece = pieceArray[row][col];
@@ -283,33 +288,83 @@ export function analyzeBoard(pieceArray) {
             else pieceColor = "w";
 
             if (pieceColor !== opponent) continue;
+
             let pieceType = piece.toLowerCase();
             let pieceDirs = directions[pieceType];
+            let temp = false;
             for (let [directionRow, directionCol] of pieceDirs) {
                 let newRow = row + directionRow;
                 let newCol = col + directionCol;
-                if ((pieceType === 'p' || pieceType === 'n') && isInBounds(newRow, newCol)) attackedSquares[newRow][newCol] = 'x';
+                if (pieceType === "n" && isInBounds(newRow, newCol) && attackedSquares[newRow][newCol] !== "A") attackedSquares[newRow][newCol] = "x";
+                else if (pieceType === "p" && isInBounds(newRow, newCol) && attackedSquares[newRow][newCol] !== "A") {
+                    if (!(needReverse && pieceArray[newRow][newCol] === "")) attackedSquares[newRow][newCol] = "x";
+                }
+                else if (pieceType === "k" && isInBounds(newRow, newCol) && attackedSquares[newRow][newCol] !== "A") {
+                    if (!needReverse) attackedSquares[newRow][newCol] = "x";
+                }
                 else { 
                     while (isInBounds(newRow, newCol)) {
-                        attackedSquares[newRow][newCol] = 'x';
+                        if (attackedSquares[newRow][newCol] !== "A") attackedSquares[newRow][newCol] = "x";
+                        if (pieceArray[newRow][newCol] === "k" && pieceColor === "w") howManyPiecesSeeKing++;
+                        if (pieceArray[newRow][newCol] === "K" && pieceColor === "b") howManyPiecesSeeKing++;
+                        if (howManyPiecesSeeKing > 0 && (pieceArray[newRow][newCol] === "K" || pieceArray[newRow][newCol] === "k" )) {
+                            while (isInBounds(newRow, newCol)) {
+                                newRow -= directionRow;
+                                newCol -= directionCol;
+                                attackedSquares[newRow][newCol] = "A";
+                            }
+                        }
                         if (pieceArray[newRow][newCol] !== "") break;
                         newRow += directionRow;
                         newCol += directionCol;
                     }
                 }
+                if (isInBounds(newRow, newCol) && !temp && attackedSquares[5][6] === 'x' && needReverse) {
+                    console.log(newRow, newCol, pieceType);
+                     temp = true;
+                }
             }   
         }
     }
+    console.log("this many pieces see king", howManyPiecesSeeKing);
+    return {attackedSquares, howManyPiecesSeeKing};
+}
+
+function isInBounds(row, col) {
+        return (row >= 0 && row < 8 && col >= 0 && col < 8);
+}
+
+export function canKingEscapeByMoving(attackedSquares, pieceArray){
+    let squareColor = getFen().split(" ")[1];
+    let kingRow = -1;
+    let kingCol;
     for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
-            if (attackedSquares[row][col] === "x" && pieceArray[row][col] !== "") {
-                if (toMove === "w" && pieceArray[row][col].toLowerCase() === pieceArray[row][col])
-                    attackedSquares[row][col] = "";
-                if (toMove === "b" && pieceArray[row][col].toUpperCase() === pieceArray[row][col])
-                    attackedSquares[row][col] = "";
+            if (pieceArray[row][col] === "k" && squareColor === "b"){
+                kingRow = row;
+                kingCol = col;
+                break;
+            }
+            if (pieceArray[row][col] === "K" && squareColor === "w"){
+                kingRow = row;
+                kingCol = col;
+                break;
             }
         }
+        if (kingRow !== -1) break;
     }
-    console.log(attackedSquares);
-    return attackedSquares;
+    let kingMoveDirections = [[-1,-1], [-1,0], [-1,1],
+                         [0,-1],          [0,1], 
+                         [1,-1], [1,0], [1,1]];
+    for (let [directionRow, directionCol] of kingMoveDirections){
+        let newRow = kingRow + directionRow;
+        let newCol = kingCol + directionCol;
+        if (squareColor === "w")
+            if (isInBounds(newRow,newCol) && attackedSquares[newRow][newCol] !== "x" && attackedSquares[newRow][newCol] !== "A")
+                if (pieceArray[newRow][newCol] === "" || pieceArray[newRow][newCol].toUpperCase() !== pieceArray[newRow][newCol]) return true;
+        if (squareColor === "b")
+            if (isInBounds(newRow,newCol) && attackedSquares[newRow][newCol] !== "x" && attackedSquares[newRow][newCol] !== "A")
+                if (pieceArray[newRow][newCol] === "" || pieceArray[newRow][newCol].toLowerCase() !== pieceArray[newRow][newCol]) return true;
+    }
+    return false;
 }

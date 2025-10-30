@@ -21,28 +21,6 @@ export function updateEvalBar (fen) {
         } else {
             document.getElementById("evaluation").innerHTML = response.evaluation + '<br>' + "Best move: " + response.bestmove;
         }
-        // if (response.mate) 
-        //     document.getElementById("evaluation").textContent = "Mate in " + response.mate + " moves";
-
-            // document.getElementById("evaluation").innerHTML = response.evaluation + '<br>' + "Best move: " + response.bestmove;
-        
     }
     });
 }
-
-// export function isCheckmate(fen){
-//      sendStockfishApiRequest(fen).then(response => {
-//     if (response && response.success) {
-//         if (response.mate && response.mate ==) {
-//             document.getElementById("evaluation").textContent = "Mate in " + response.mate + " moves";
-//         } else {
-//             document.getElementById("evaluation").innerHTML = response.evaluation + '<br>' + "Best move: " + response.bestmove;
-//         }
-//         // if (response.mate) 
-//         //     document.getElementById("evaluation").textContent = "Mate in " + response.mate + " moves";
-
-//             // document.getElementById("evaluation").innerHTML = response.evaluation + '<br>' + "Best move: " + response.bestmove;
-        
-//     }
-//     });
-// }

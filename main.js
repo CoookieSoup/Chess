@@ -1,6 +1,6 @@
 import { Stack } from './stack.js';
 import { convertArrayToFen, convertFenToArray } from './fen_conversion.js';
-import { executeMoveOnArray } from './move_logic.js';
+import { canKingEscapeByMoving, executeMoveOnArray } from './move_logic.js';
 import { updateEvalBar } from './send_stockfish_api_request.js';
 import { circularLinkedList, Node } from './circular_linked_list.js';
 import { saveGame,loadGames } from './data_logic.js';
@@ -23,7 +23,36 @@ export function setFen(newValue) {
 
 function drawBoard(fen) {
     let pieceArray = convertFenToArray(fen);
-    let targetedSquareArray = analyzeBoard(pieceArray);
+    let analyzeBoardObject = analyzeBoard(pieceArray, false);
+    let targetedSquareArray = analyzeBoardObject.attackedSquares;
+    let howManySeeKing = analyzeBoardObject.howManyPiecesSeeKing;
+    if (howManySeeKing > 0){
+        if (fen.split(" ")[1] === "w") document.getElementById("checkMessage").textContent  = "White is in check";
+        else document.getElementById("checkMessage").textContent  = "Black is in check";
+
+        if (howManySeeKing > 1 && !canKingEscapeByMoving(targetedSquareArray, pieceArray)) {
+            if (fen.split(" ")[1] === "w") document.getElementById("checkMessage").textContent  = "Checkmate, black wins";
+            else document.getElementById("checkMessage").textContent  = "Checkmate, white wins";
+        }
+        else {
+            if (!canKingEscapeByMoving(targetedSquareArray, pieceArray)){
+                let defenseArray = analyzeBoard(pieceArray, true).attackedSquares;
+                let canHeDefend = false;
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        if (targetedSquareArray[row][col] === "A" && (defenseArray[row][col] === "A" || defenseArray[row][col] === "x")) canHeDefend = true;
+                    }
+                }
+                console.log(canHeDefend);
+                if (!canHeDefend){
+                    if (fen.split(" ")[1] === "w") document.getElementById("checkMessage").textContent  = "Checkmate, black wins";
+                    else document.getElementById("checkMessage").textContent  = "Checkmate, white wins";
+                }
+            }
+        }
+    }
+    else document.getElementById("checkMessage").textContent  = "";
+
     // console.log(pieceArray);
     console.log(fen);
     let canvas = document.getElementById("board");
@@ -34,6 +63,7 @@ function drawBoard(fen) {
         for (let col = 0; col < 8; col++) {
             canvas_context.fillStyle = (row + col) % 2 === 0 ? "rgba(237, 214, 176, 1)" : "rgba(184, 135, 98, 1)";
             if (targetedSquareArray[row][col] === 'x') canvas_context.fillStyle = "rgba(231, 89, 89, 1)";
+            if (targetedSquareArray[row][col] === 'A') canvas_context.fillStyle = "rgba(89, 231, 188, 1)";
             canvas_context.fillRect(col * square_Size, row * square_Size, square_Size, square_Size);
             
             let letter = String.fromCharCode(97 + col);
@@ -61,14 +91,6 @@ function drawBoard(fen) {
             else piece = "";
             canvas_context.font = 80 + "px normal";
             canvas_context.fillText(piece, col * square_Size + square_Size/9, row * square_Size + square_Size - square_Size/5);
-
-            if (pieceArray[row][col] === "k" && targetedSquareArray[row][col] === "x")  {
-                document.getElementById("checkMessage").textContent  = "Black is in check";
-            }
-            if (pieceArray[row][col] === "K" && targetedSquareArray[row][col] === "x")  {
-                document.getElementById("checkMessage").textContent  = "White is in check";
-            }
-
         }
     }
     
@@ -147,7 +169,6 @@ function redoMove() {
 }
 
 function analyzeGame() {
-
     while (!backStack.isEmpty()) forwardStack.push(backStack.pop());
     isAnalyzing = true;
 
@@ -166,13 +187,16 @@ function analyzeGame() {
     fen = myCircularLinkedList.getElementAt(0).element;
     updateEvalBar(fen);
     saveGame(myCircularLinkedList.toArray());
+    // mySinglyLinkedList.append(myCircularLinkedList.toArray());
     drawBoard(fen);
 }
 
 function viewGame(){
     myCLLIndex = 0;
     let index = document.getElementById("historyViewerInput").value;
-    let currentGame = mySinglyLinkedList.printAtIndex((index - 1));
+    let currentGame = mySinglyLinkedList.printAtIndex((index));
+    
+    console.log("index", index);
     currentGame = currentGame.board;
     while (!backStack.isEmpty()){
         backStack.pop();
@@ -188,6 +212,7 @@ function viewGame(){
         myCircularLinkedList.append(currentGame[i]);
     }
     forwardStack.print();
+    console.log("MYCLLARRAY", myCircularLinkedList.toArray());
     fen = currentGame[0];
     updateEvalBar(fen);
     isAnalyzing = true;
@@ -203,6 +228,7 @@ function load(){
     let allGames = loadGames();
     console.log("Game history: ", allGames);
     for (let game of allGames){
+        // mySinglyLinkedList.clear();
         mySinglyLinkedList.append(game);
     }
 }
@@ -220,13 +246,3 @@ document.getElementById("historyViewerButton").addEventListener("click", viewGam
 
 
 window.addEventListener('load', load);
-
-
-
-
-// mySinglyLinkedList.printAtIndex(0);
-// mySinglyLinkedList.print(); // "Apple -> Banana -> Cherry -> Date"
-// console.log(mySinglyLinkedList.printAtIndex(0));
-// mySinglyLinkedList.printAtIndex(0); // "Index 0: Apple"
-
-// console.log(mySinglyLinkedList.get(1)); // "Banana"
