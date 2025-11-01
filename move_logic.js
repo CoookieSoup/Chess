@@ -79,7 +79,7 @@ function whitePawnCase(pieceArray, colFrom, rowFrom, colTo, rowTo) {
             return true;
         }
     }
-    else if (rowTo === rowFrom - 2 && rowFrom === 6 && pieceArray[5][rowFrom] === ""){
+    else if (rowTo === rowFrom - 2 && rowFrom === 6 && pieceArray[5][colFrom] === ""){
         movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
         addEnPassant(colTo, rowTo);
         return true;
@@ -101,7 +101,7 @@ function blackPawnCase(pieceArray, colFrom, rowFrom, colTo, rowTo) {
             return true;
         }
     }
-    else if (rowTo === rowFrom + 2 && rowFrom === 1 && pieceArray[2][rowFrom] === ""){
+    else if (rowTo === rowFrom + 2 && rowFrom === 1 && pieceArray[2][colFrom] === ""){
         movePiece(pieceArray, colFrom, rowFrom, colTo, rowTo);
         addEnPassant(colTo, rowTo);
         return true;
@@ -332,7 +332,7 @@ export function analyzeBoard(pieceArray, needReverse) {
             }   
         }
     }
-    console.log("this many pieces see king", howManyPiecesSeeKing);
+    if (howManyPiecesSeeKing > 0 ) console.log("this many pieces see king", howManyPiecesSeeKing);
     return {attackedSquares, howManyPiecesSeeKing};
 }
 
@@ -373,4 +373,8 @@ export function canKingEscapeByMoving(attackedSquares, pieceArray){
                 if (pieceArray[newRow][newCol] === "" || pieceArray[newRow][newCol].toLowerCase() !== pieceArray[newRow][newCol]) return true;
     }
     return false;
+}
+
+export function isCheckMate(){
+    
 }

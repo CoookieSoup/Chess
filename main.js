@@ -2,7 +2,7 @@ import { Stack } from './stack.js';
 import { convertArrayToFen, convertFenToArray } from './fen_conversion.js';
 import { canKingEscapeByMoving, executeMoveOnArray } from './move_logic.js';
 import { updateEvalBar } from './send_stockfish_api_request.js';
-import { circularLinkedList, Node } from './circular_linked_list.js';
+import { circularLinkedList } from './circular_linked_list.js';
 import { saveGame,loadGames } from './data_logic.js';
 import { SinglyLinkedList } from './singly_linked_list.js'
 import { analyzeBoard } from './move_logic.js';
@@ -53,7 +53,7 @@ function drawBoard(fen) {
     }
     else document.getElementById("checkMessage").textContent  = "";
 
-    // console.log(pieceArray);
+    console.log(pieceArray);
     console.log(fen);
     let canvas = document.getElementById("board");
     let canvas_context = canvas.getContext("2d");
@@ -187,14 +187,15 @@ function analyzeGame() {
     fen = myCircularLinkedList.getElementAt(0).element;
     updateEvalBar(fen);
     saveGame(myCircularLinkedList.toArray());
-    // mySinglyLinkedList.append(myCircularLinkedList.toArray());
+    let lastGame = JSON.parse(localStorage.getItem('chessSaves') || '[]').pop();
+    mySinglyLinkedList.append(lastGame);
     drawBoard(fen);
 }
 
 function viewGame(){
     myCLLIndex = 0;
     let index = document.getElementById("historyViewerInput").value;
-    let currentGame = mySinglyLinkedList.printAtIndex((index));
+    let currentGame = mySinglyLinkedList.get(index);
     
     console.log("index", index);
     currentGame = currentGame.board;
