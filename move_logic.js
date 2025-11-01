@@ -308,10 +308,16 @@ export function analyzeBoard(pieceArray, needReverse) {
                         if (pieceArray[newRow][newCol] === "k" && pieceColor === "w") howManyPiecesSeeKing++;
                         if (pieceArray[newRow][newCol] === "K" && pieceColor === "b") howManyPiecesSeeKing++;
                         if (howManyPiecesSeeKing > 0 && (pieceArray[newRow][newCol] === "K" || pieceArray[newRow][newCol] === "k" )) {
+                            newRow -= directionRow;
+                            newCol -= directionCol;
                             while (isInBounds(newRow, newCol)) {
+                                if (pieceArray[newRow][newCol] !== "") {
+                                    attackedSquares[newRow][newCol] = "A";
+                                    break;
+                                }
+                                attackedSquares[newRow][newCol] = "A";
                                 newRow -= directionRow;
                                 newCol -= directionCol;
-                                attackedSquares[newRow][newCol] = "A";
                             }
                         }
                         if (pieceArray[newRow][newCol] !== "") break;

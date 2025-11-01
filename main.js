@@ -36,6 +36,7 @@ function drawBoard(fen) {
         }
         else {
             if (!canKingEscapeByMoving(targetedSquareArray, pieceArray)){
+
                 let defenseArray = analyzeBoard(pieceArray, true).attackedSquares;
                 let canHeDefend = false;
                 for (let row = 0; row < 8; row++) {
@@ -43,7 +44,6 @@ function drawBoard(fen) {
                         if (targetedSquareArray[row][col] === "A" && (defenseArray[row][col] === "A" || defenseArray[row][col] === "x")) canHeDefend = true;
                     }
                 }
-                console.log(canHeDefend);
                 if (!canHeDefend){
                     if (fen.split(" ")[1] === "w") document.getElementById("checkMessage").textContent  = "Checkmate, black wins";
                     else document.getElementById("checkMessage").textContent  = "Checkmate, white wins";
@@ -231,6 +231,7 @@ function load(){
         // mySinglyLinkedList.clear();
         mySinglyLinkedList.append(game);
     }
+    // console.log("Destytojui rodau, kad duomenys single linked list on launch", mySinglyLinkedList.print());
 }
 
 drawBoard(fen);

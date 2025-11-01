@@ -1,4 +1,4 @@
-export class Node {
+class Node {
     constructor(data) {
         this.data = data;
         this.next = null;
@@ -30,7 +30,7 @@ export class SinglyLinkedList {
     // Get element by index
     get(index) {
         if (index < 0 || index >= this.size) {
-            return null; // Index out of bounds
+            return null;
         }
         
         let current = this.head;
@@ -40,32 +40,38 @@ export class SinglyLinkedList {
         return current.data;
     }
 
-    // Print element by index
-    printAtIndex(index) {
-        const element = this.get(index);
-        if (element !== null) {
-            console.log(`Index ${index}:`, element);
-        } else {
-            console.log(`Index ${index} is out of bounds`);
+    // Print all elements (fixed)
+    print() {
+        if (this.size === 0) {
+            console.log("List is empty");
+            return;
         }
-        return element;
+        
+        let current = this.head;
+        let index = 0;
+        while (current) {
+            console.log(`[${index}]:`, current.data);
+            current = current.next;
+            index++;
+        }
     }
 
-    // Print all elements
-    print() {
+    // Alternative: Return as string
+    toString() {
         let current = this.head;
-        const elements = [];
+        let result = "";
         while (current) {
-            console.log(current.data);
-            console.log();
+            result += current.data + " -> ";
             current = current.next;
         }
+        result += "null";
+        return result;
     }
 
-    // Get size
     getSize() {
         return this.size;
     }
+    
     clear() {
         this.head = null;
         this.size = 0;
