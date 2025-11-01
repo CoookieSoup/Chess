@@ -40,7 +40,6 @@ export class SinglyLinkedList {
         return current.data;
     }
 
-    // Print all elements (fixed)
     print() {
         if (this.size === 0) {
             console.log("List is empty");
@@ -48,12 +47,14 @@ export class SinglyLinkedList {
         }
         
         let current = this.head;
-        let index = 0;
+        const array = [];
+        
         while (current) {
-            console.log(`[${index}]:`, current.data);
+            array.push(current.data);
             current = current.next;
-            index++;
         }
+        
+        console.log(array);
     }
 
     // Alternative: Return as string

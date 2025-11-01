@@ -374,7 +374,3 @@ export function canKingEscapeByMoving(attackedSquares, pieceArray){
     }
     return false;
 }
-
-export function isCheckMate(){
-    
-}

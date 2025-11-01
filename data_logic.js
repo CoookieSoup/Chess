@@ -15,7 +15,7 @@ export function loadGames() {
     let saved = localStorage.getItem('chessSaves');
     if (saved) {
         let allGames = JSON.parse(saved);
-        console.log('Found', allGames.length, 'saved games:');
+        console.log('Found', allGames.length, 'saved games, for newest game index type', allGames.length);
         return allGames;
     }
     return [];

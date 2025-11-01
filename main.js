@@ -47,14 +47,15 @@ function drawBoard(fen) {
                 if (!canHeDefend){
                     if (fen.split(" ")[1] === "w") document.getElementById("checkMessage").textContent  = "Checkmate, black wins";
                     else document.getElementById("checkMessage").textContent  = "Checkmate, white wins";
+
                 }
             }
         }
     }
     else document.getElementById("checkMessage").textContent  = "";
 
-    console.log(pieceArray);
-    console.log(fen);
+    // console.log(pieceArray);
+    // console.log(fen);
     let canvas = document.getElementById("board");
     let canvas_context = canvas.getContext("2d");
     let square_Size = 100;
@@ -137,7 +138,9 @@ function undoMove() {
         if (backStack.size() === 0) document.getElementById("prevButton").style.display = "none";
         else document.getElementById("prevButton").style.display = "inline";
     }
-    
+    //destytojui kad stekai veikia
+    // backStack.print();
+    // forwardStack.print();
     drawBoard(fen);
 }
 
@@ -165,6 +168,11 @@ function redoMove() {
         }
         else document.getElementById("nextButton").style.display = "inline";
     }
+
+
+    //destytojui kad stekai veikia
+    // backStack.print();
+    // forwardStack.print();
     drawBoard(fen);
 }
 
@@ -212,8 +220,7 @@ function viewGame(){
         forwardStack.push(currentGame[i]);
         myCircularLinkedList.append(currentGame[i]);
     }
-    forwardStack.print();
-    console.log("MYCLLARRAY", myCircularLinkedList.toArray());
+    console.log("Destytojui matyt, kad doubly linked liste zaidimo ejimai: ", myCircularLinkedList.toArray());
     fen = currentGame[0];
     updateEvalBar(fen);
     isAnalyzing = true;
@@ -227,12 +234,15 @@ function viewGame(){
 
 function load(){
     let allGames = loadGames();
-    console.log("Game history: ", allGames);
     for (let game of allGames){
-        // mySinglyLinkedList.clear();
         mySinglyLinkedList.append(game);
     }
-    // console.log("Destytojui rodau, kad duomenys single linked list on launch", mySinglyLinkedList.print());
+    console.log("Destytojui rodau, kad duomenys single linked list on launch");
+    mySinglyLinkedList.print();
+}
+
+function reloadWebsite() {
+    location.reload();
 }
 
 drawBoard(fen);
@@ -245,6 +255,6 @@ document.getElementById("prevButton").addEventListener("click", undoMove);
 document.getElementById("nextButton").addEventListener("click", redoMove);
 document.getElementById("analyzeButton").addEventListener("click", analyzeGame);
 document.getElementById("historyViewerButton").addEventListener("click", viewGame);
-
+document.getElementById("exitGame").addEventListener("click", reloadWebsite);
 
 window.addEventListener('load', load);
